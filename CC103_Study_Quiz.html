@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC103 – Intermediate Programming Master Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #171c2c;
+    --border: #1e2640;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --card: #13182a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.25;
+  }
+  .orb-1 { width: 500px; height: 500px; background: #4f8ef7; top: -200px; left: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: #7c3aed; bottom: -100px; right: -100px; }
+
+  /* SCREENS */
+  .screen { position: relative; z-index: 1; display: none; }
+  .screen.active { display: flex; }
+
+  /* ==================== HOME SCREEN ==================== */
+  #home {
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.3);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease;
+  }
+  .badge::before { content: '◆'; font-size: 8px; }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 7vw, 76px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+    animation: fadeDown 0.7s ease;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, #4f8ef7, #a78bfa, #4f8ef7);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer { to { background-position: 200% center; } }
+
+  .subtitle {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+    animation: fadeDown 0.8s ease;
+  }
+
+  /* TOPIC CARDS */
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    width: 100%;
+    margin-bottom: 40px;
+    animation: fadeUp 0.9s ease;
+  }
+
+  .topic-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(79,142,247,0.06), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .topic-card:hover { border-color: rgba(79,142,247,0.5); transform: translateY(-2px); }
+  .topic-card:hover::before { opacity: 1; }
+  .topic-card.selected {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.1);
+  }
+  .topic-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .topic-icon { font-size: 22px; margin-bottom: 8px; }
+  .topic-name { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .topic-count { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  /* MODE SELECTOR */
+  .mode-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    animation: fadeUp 1s ease;
+  }
+  .mode-btn {
+    flex: 1;
+    max-width: 160px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .mode-btn:hover { border-color: var(--accent); }
+  .mode-btn.selected { border-color: var(--accent); background: rgba(79,142,247,0.1); color: var(--accent); }
+  .mode-icon { font-size: 20px; display: block; margin-bottom: 6px; }
+
+  /* START BTN */
+  .start-btn {
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    border: none;
+    border-radius: 14px;
+    padding: 16px 48px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+    animation: fadeUp 1.1s ease;
+    box-shadow: 0 8px 32px rgba(79,142,247,0.3);
+  }
+  .start-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(79,142,247,0.4); }
+  .start-btn:active { transform: translateY(0); }
+
+  .select-all-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 16px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+  }
+  .select-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ==================== QUIZ SCREEN ==================== */
+  #quiz {
+    min-height: 100vh;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,13,20,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .progress-wrap { flex: 1; }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .progress-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .progress-frac { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); }
+
+  .progress-bar {
+    height: 5px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f8ef7, #7c3aed);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  .score-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .score-chip .correct { color: var(--green); }
+  .score-chip .wrong { color: var(--red); }
+
+  /* QUESTION AREA */
+  .quiz-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px 80px;
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  .q-topic-badge {
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.25);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+  }
+  .q-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 36px;
+    width: 100%;
+    margin-bottom: 20px;
+    animation: slideIn 0.35s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  /* CHOICES */
+  .choices { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+  .choice-btn {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 22px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: slideIn 0.35s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+  .choice-btn:nth-child(1) { animation-delay: 0.05s; }
+  .choice-btn:nth-child(2) { animation-delay: 0.1s; }
+  .choice-btn:nth-child(3) { animation-delay: 0.15s; }
+  .choice-btn:nth-child(4) { animation-delay: 0.2s; }
+
+  .choice-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(79,142,247,0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: rgba(79,142,247,0.5); transform: translateX(4px); }
+  .choice-btn:hover:not(:disabled)::before { opacity: 1; }
+
+  .choice-letter {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.08);
+  }
+  .choice-btn.correct .choice-letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+  .choice-btn.wrong {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.08);
+  }
+  .choice-btn.wrong .choice-letter {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+  .choice-btn:disabled { cursor: default; }
+
+  /* FEEDBACK */
+  .feedback {
+    width: 100%;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .feedback.show { display: flex; }
+  .feedback.correct-fb { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); }
+  .feedback.wrong-fb { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); }
+
+  .feedback-icon { font-size: 20px; flex-shrink: 0; }
+  .feedback-text { font-size: 14px; line-height: 1.6; }
+  .feedback-text strong { display: block; margin-bottom: 4px; font-size: 15px; }
+  .feedback-text .explanation { color: var(--muted); font-size: 13px; }
+
+  /* CONTROLS */
+  .quiz-controls {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .ctrl-btn {
+    border-radius: 12px;
+    padding: 13px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  .skip-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .skip-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .next-btn {
+    background: linear-gradient(135deg, #4f8ef7, #7c3aed);
+    color: white;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.3);
+    display: none;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,142,247,0.4); }
+  .next-btn.show { display: block; }
+
+  /* ==================== RESULTS SCREEN ==================== */
+  #results {
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+    animation: fadeDown 0.5s ease;
+  }
+
+  .results-subtitle { color: var(--muted); margin-bottom: 40px; animation: fadeDown 0.6s ease; }
+
+  .score-ring-wrap {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 36px;
+    animation: fadeUp 0.7s ease;
+  }
+  .score-ring-wrap svg { transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--border); stroke-width: 10; }
+  .ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-pct { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; }
+  .ring-label { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto 32px;
+    animation: fadeUp 0.8s ease;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+  }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.blue { color: var(--accent); }
+  .stat-key { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Topic breakdown */
+  .breakdown {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto 32px;
+    animation: fadeUp 0.9s ease;
+  }
+  .breakdown-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 14px; text-align: left; }
+  .breakdown-item { margin-bottom: 10px; }
+  .breakdown-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .breakdown-name { font-size: 13px; color: var(--text); }
+  .breakdown-score { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+  .breakdown-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .breakdown-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+  .results-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; animation: fadeUp 1s ease; }
+  .res-btn {
+    border-radius: 12px;
+    padding: 13px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  .res-btn.primary { background: linear-gradient(135deg, #4f8ef7, #7c3aed); color: white; box-shadow: 0 4px 16px rgba(79,142,247,0.3); }
+  .res-btn.primary:hover { transform: translateY(-2px); }
+  .res-btn.ghost { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+  .res-btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* STREAK INDICATOR */
+  .streak {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    z-index: 200;
+    display: none;
+    animation: fadeDown 0.3s ease;
+  }
+  .streak.show { display: block; }
+  .streak-val { font-size: 20px; font-weight: 700; color: var(--yellow); }
+
+  /* FLIP ANIMATION */
+  @keyframes correct-pop {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+  .correct-pop { animation: correct-pop 0.35s ease; }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .topbar { padding: 12px 16px; }
+    .quiz-body { padding: 24px 16px 60px; }
+    .question-card { padding: 20px 20px; }
+    .question-text { font-size: 16px; }
+    .stats-grid { grid-template-columns: repeat(3,1fr); }
+    .mode-row { flex-wrap: wrap; justify-content: center; }
+    .topics-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* CONFETTI */
+  .confetti-piece {
+    position: fixed;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
+
+  .hint-tag {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- ============ HOME SCREEN ============ -->
+<div id="home" class="screen active">
+  <div class="badge">CC103 — Intermediate Programming</div>
+
+  <h1>Master<br><span>Study Quiz</span></h1>
+  <p class="subtitle">123 questions across all topics. Pick your topics, choose your mode, and start drilling.</p>
+
+  <button class="select-all-btn" onclick="toggleAll()">Select / Deselect All Topics</button>
+
+  <div class="topics-grid" id="topicsGrid"></div>
+
+  <div class="mode-row">
+    <button class="mode-btn selected" data-mode="practice" onclick="selectMode('practice')">
+      <span class="mode-icon">🧠</span>Practice<br><small style="font-weight:300;font-size:11px">See answers immediately</small>
+    </button>
+    <button class="mode-btn" data-mode="exam" onclick="selectMode('exam')">
+      <span class="mode-icon">📝</span>Exam<br><small style="font-weight:300;font-size:11px">Review at the end</small>
+    </button>
+    <button class="mode-btn" data-mode="blitz" onclick="selectMode('blitz')">
+      <span class="mode-icon">⚡</span>Blitz<br><small style="font-weight:300;font-size:11px">Random 20 questions</small>
+    </button>
+  </div>
+
+  <button class="start-btn" onclick="startQuiz()">Start Quiz →</button>
+</div>
+
+<!-- ============ QUIZ SCREEN ============ -->
+<div id="quiz" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span class="progress-label" id="progressTopic">Loading...</span>
+        <span class="progress-frac" id="progressFrac">0 / 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="score-chip"><span class="correct" id="scoreCorrect">0</span> / <span class="wrong" id="scoreWrong">0</span></div>
+  </div>
+
+  <div class="quiz-body">
+    <div class="q-meta">
+      <span class="q-topic-badge" id="qTopicBadge">Topic</span>
+      <span class="q-number" id="qNumber">Q1</span>
+    </div>
+
+    <div class="question-card" id="questionCard">
+      <div class="question-text" id="questionText">Loading...</div>
+    </div>
+
+    <div class="choices" id="choicesContainer"></div>
+
+    <div class="feedback" id="feedback">
+      <div class="feedback-icon" id="feedbackIcon"></div>
+      <div class="feedback-text">
+        <strong id="feedbackTitle"></strong>
+        <span class="explanation" id="feedbackExplanation"></span>
+      </div>
+    </div>
+
+    <div class="quiz-controls">
+      <button class="ctrl-btn skip-btn" id="skipBtn" onclick="skipQuestion()">Skip →</button>
+      <button class="ctrl-btn next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div class="hint-tag" id="hintTag">Click an answer to continue</div>
+  </div>
+</div>
+
+<!-- ============ RESULTS SCREEN ============ -->
+<div id="results" class="screen">
+  <div class="results-title" id="resultsTitle">Quiz Complete!</div>
+  <div class="results-subtitle" id="resultsSubtitle">Here's how you did</div>
+
+  <div class="score-ring-wrap">
+    <svg width="180" height="180" viewBox="0 0 180 180">
+      <circle class="ring-track" cx="90" cy="90" r="80"/>
+      <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="80" stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
+    </svg>
+    <div class="ring-center">
+      <div class="ring-pct" id="ringPct">0%</div>
+      <div class="ring-label">SCORE</div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val green" id="resCorrect">0</div><div class="stat-key">Correct</div></div>
+    <div class="stat-card"><div class="stat-val red" id="resWrong">0</div><div class="stat-key">Wrong</div></div>
+    <div class="stat-card"><div class="stat-val blue" id="resTotal">0</div><div class="stat-key">Total</div></div>
+  </div>
+
+  <div class="breakdown" id="breakdown">
+    <div class="breakdown-title">Topic Breakdown</div>
+    <div id="breakdownItems"></div>
+  </div>
+
+  <div class="results-actions">
+    <button class="res-btn primary" onclick="startQuiz()">Retry Same Topics</button>
+    <button class="res-btn ghost" onclick="reviewWrong()">Review Wrong Answers</button>
+    <button class="res-btn ghost" onclick="goHome()">Change Settings</button>
+  </div>
+</div>
+
+<div class="streak" id="streak">
+  <div class="streak-val" id="streakVal">🔥 3</div>
+  <div style="font-size:10px;color:var(--muted)">STREAK</div>
+</div>
+
+<script>
+// ============================================================
+//  ALL 123 QUESTIONS
+// ============================================================
+const QUESTIONS = [
+  // ── JCF DEFINITION ──
+  { topic:"JCF – Basics", q:"What is the Java Collections Framework (JCF)?", choices:["A compiler for Java programs","A framework that represents a group of objects as a single unit","A database management system","A GUI toolkit for Java"], ans:1, exp:"JCF is found in java.util and provides architecture to store and manipulate data." },
+  { topic:"JCF – Basics", q:"In which Java package is the Collections Framework found?", choices:["java.lang","java.io","java.util","java.sql"], ans:2, exp:"All JCF classes and interfaces reside in java.util." },
+  { topic:"JCF – Basics", q:"What are the three main components of the JCF?", choices:["Classes, Methods, Variables","Interfaces, Classes, Algorithms","Packages, Modules, Libraries","Objects, Arrays, Streams"], ans:1, exp:"JCF is composed of interfaces (abstract types), classes (implementations), and algorithms (static utility methods)." },
+  { topic:"JCF – Basics", q:"Which goal of the Collections Framework ensures data structures perform efficiently?", choices:["Extensibility","Interoperability","High Performance","Portability"], ans:2, exp:"High Performance means the framework uses efficient underlying data structures." },
+  { topic:"JCF – Basics", q:"What does 'Interoperability' mean as a goal of the JCF?", choices:["Collections can be extended easily","Collections work similarly across different types","Collections are faster than arrays","Collections avoid duplicates"], ans:1, exp:"Interoperability means different collection types can be used interchangeably through common interfaces." },
+  { topic:"JCF – Basics", q:"Which goal of JCF means it is easy to adapt or extend the framework?", choices:["High Performance","Interoperability","Extensibility","Immutability"], ans:2, exp:"Extensibility allows developers to create their own collection implementations." },
+
+  // ── COLLECTION INTERFACES ──
+  { topic:"Collection Interfaces", q:"What is the root interface of the Java Collections Framework?", choices:["List","Set","Collection","Iterable"], ans:2, exp:"The Collection interface is the root and is implemented by List, Set, and Queue." },
+  { topic:"Collection Interfaces", q:"Which interface does the Collection interface NOT directly implement?", choices:["List","Set","Queue","Map"], ans:3, exp:"Map is NOT a subtype of Collection; it is a separate interface." },
+  { topic:"Collection Interfaces", q:"Which characteristic defines the List interface?", choices:["Stores unique elements only","Ordered collection that allows duplicates","Stores key-value pairs","Maintains ascending order automatically"], ans:1, exp:"List is ordered and allows duplicate elements. ArrayList and LinkedList implement List." },
+  { topic:"Collection Interfaces", q:"Which interface stores only unique elements and does not allow duplicates?", choices:["List","Queue","Set","Map"], ans:2, exp:"Set stores unique elements with no duplicates allowed." },
+  { topic:"Collection Interfaces", q:"What does SortedSet extend and what is its main feature?", choices:["Extends List; maintains insertion order","Extends Set; maintains elements in ascending order","Extends Map; stores key-value pairs","Extends Queue; processes elements by priority"], ans:1, exp:"SortedSet extends Set and automatically sorts elements in natural ascending order." },
+  { topic:"Collection Interfaces", q:"Which interface stores key-value pairs where keys must be unique?", choices:["List","Set","Queue","Map"], ans:3, exp:"Map stores key-value pairs and is NOT a subtype of Collection interface." },
+  { topic:"Collection Interfaces", q:"What does SortedMap guarantee about its keys?", choices:["Keys are stored in insertion order","Keys are stored in descending order","Keys are stored in ascending order","Keys allow duplicates"], ans:2, exp:"SortedMap maintains keys in their natural ascending order." },
+  { topic:"Collection Interfaces", q:"What does Map.Entry represent?", choices:["A mapping of one collection to another","A single key-value pair in a Map","An iterator for Map","A sorted version of Map"], ans:1, exp:"Map.Entry represents one key-value pair and is used when iterating over Map entries." },
+  { topic:"Collection Interfaces", q:"What replaced the legacy Enumeration interface in Java?", choices:["Iterator","Scanner","ListIterator","Comparator"], ans:0, exp:"Enumeration was used in legacy code for iteration but has been replaced by Iterator." },
+  { topic:"Collection Interfaces", q:"Which two collection classes implement the List interface?", choices:["HashSet and TreeSet","HashMap and TreeMap","ArrayList and LinkedList","PriorityQueue and ArrayDeque"], ans:2, exp:"Both ArrayList and LinkedList are common implementations of the List interface." },
+  { topic:"Collection Interfaces", q:"Which sub-interfaces does the Collection interface directly implement?", choices:["Map, SortedMap, Entry","List, Set, Queue","SortedSet, Deque, Vector","Enumeration, Iterator, ListIterator"], ans:1, exp:"Collection is directly extended by List, Set, and Queue interfaces." },
+
+  // ── LINKED LIST ──
+  { topic:"LinkedList", q:"How is a LinkedList best described as a data structure?", choices:["Elements stored in contiguous memory locations","A linear structure where each element is a node with non-contiguous memory","A sorted collection of unique elements","A collection of key-value pairs"], ans:1, exp:"In a LinkedList, elements (nodes) are scattered in memory and linked via pointers." },
+  { topic:"LinkedList", q:"What are the two parts of a node in a LinkedList?", choices:["Key and Value","Index and Element","Data part and Address (pointer) part","Head and Tail"], ans:2, exp:"Every node stores the data and a pointer/reference to the next (and/or previous) node." },
+  { topic:"LinkedList", q:"Which is an advantage of LinkedList over arrays?", choices:["Faster random access","Fixed size","Easy insertion and deletion","Less memory usage"], ans:2, exp:"LinkedList allows O(1) insertion/deletion at known positions without shifting elements." },
+  { topic:"LinkedList", q:"Which is a disadvantage of LinkedList?", choices:["Cannot store duplicate values","No direct access; must traverse from head","Elements must be sorted","Cannot grow dynamically"], ans:1, exp:"Unlike arrays, you cannot access index N directly; you must traverse from the beginning." },
+  { topic:"LinkedList", q:"In a Singly Linked List, each node points to:", choices:["The previous node only","Both previous and next nodes","The next node only","The head node"], ans:2, exp:"A singly linked list node has data and a 'next' pointer to the following node." },
+  { topic:"LinkedList", q:"Which type of linked list allows traversal both forward and backward?", choices:["Singly Linked List","Circular Linked List","Doubly Linked List","Stack"], ans:2, exp:"Each node in a Doubly Linked List has both a 'previous' and 'next' pointer." },
+  { topic:"LinkedList", q:"What is unique about a Circular Linked List?", choices:["Each node points to both prev and next","The last node points back to the first node forming a loop","It allows random access","It stores only unique elements"], ans:1, exp:"In a Circular Linked List, the last node's 'next' pointer links back to the head." },
+  { topic:"LinkedList", q:"Which type of linked list can be singly or doubly circular?", choices:["Singly Linked List only","Doubly Linked List only","Circular Linked List","Stack"], ans:2, exp:"A Circular Linked List can exist as either singly circular or doubly circular." },
+  { topic:"LinkedList", q:"What does LinkedList allow that HashSet and TreeSet do NOT?", choices:["Sorted order","Unique elements only","Duplicate values and maintains order","Key-value pairs"], ans:2, exp:"LinkedList maintains insertion order and allows duplicates, unlike Set implementations." },
+  { topic:"LinkedList", q:"Which is TRUE about LinkedList access speed compared to arrays?", choices:["LinkedList has faster access than arrays","LinkedList has the same access speed as arrays","LinkedList has slower access than arrays","LinkedList cannot access elements at all"], ans:2, exp:"Array elements are accessed via index in O(1), but LinkedList requires O(n) traversal." },
+
+  // ── HASHSET ──
+  { topic:"HashSet", q:"What interface does HashSet implement?", choices:["List","SortedSet","Set","Map"], ans:2, exp:"HashSet implements the Set interface, ensuring unique elements." },
+  { topic:"HashSet", q:"Which data structure backs the HashSet internally?", choices:["TreeMap","LinkedList","HashMap","ArrayList"], ans:2, exp:"HashSet is internally backed by a HashMap instance." },
+  { topic:"HashSet", q:"What hashing concept does HashSet use to store elements?", choices:["hashvalue()","hashcode()","hashIndex()","hashBucket()"], ans:1, exp:"HashSet uses hashcode() to determine which bucket an element goes into." },
+  { topic:"HashSet", q:"What is the default initial capacity of a HashSet?", choices:["8","10","16","32"], ans:2, exp:"HashSet has a default capacity of 16 buckets." },
+  { topic:"HashSet", q:"What is the default load factor of HashSet?", choices:["0.5","0.6","0.75","1.0"], ans:2, exp:"The load factor of 0.75 means HashSet resizes when 75% of capacity is filled." },
+  { topic:"HashSet", q:"How many null values can a HashSet store?", choices:["None","One null value","Two null values","Unlimited null values"], ans:1, exp:"HashSet allows exactly one null value since duplicates are not allowed." },
+  { topic:"HashSet", q:"Does HashSet guarantee the order of insertion?", choices:["Yes, always maintains insertion order","Yes, but only for integers","No, there is no guaranteed insertion order","Yes, it maintains ascending order"], ans:2, exp:"HashSet does not guarantee any specific ordering of elements." },
+  { topic:"HashSet", q:"For which operation is HashSet best suited?", choices:["Sorted data retrieval","Frequent insert/delete at ends","Fast searching operations","Storing key-value pairs"], ans:2, exp:"HashSet offers O(1) average time for search, add, and remove operations." },
+  { topic:"HashSet", q:"Is HashSet synchronized?", choices:["Yes, it is thread-safe by default","No, it is non-synchronized","Only when using null values","Only in Java 8+"], ans:1, exp:"HashSet is non-synchronized; use Collections.synchronizedSet() for thread safety." },
+  { topic:"HashSet", q:"What happens when a duplicate element is added to a HashSet?", choices:["It throws an exception","It replaces the old element","It is silently ignored","It is stored at a different index"], ans:2, exp:"HashSet's add() returns false but does not throw an exception for duplicates." },
+
+  // ── TREESET ──
+  { topic:"TreeSet", q:"Which interface does TreeSet implement?", choices:["List","Set","SortedSet","Map"], ans:2, exp:"TreeSet implements SortedSet (which extends Set), providing sorted unique elements." },
+  { topic:"TreeSet", q:"What internal structure does TreeSet use?", choices:["Hash table","Linked nodes","Tree structure","Array"], ans:2, exp:"TreeSet uses a Red-Black Tree (a type of balanced binary search tree)." },
+  { topic:"TreeSet", q:"In what order does TreeSet store its elements?", choices:["Insertion order","Descending alphabetical order","Natural ascending order","Random order"], ans:2, exp:"TreeSet maintains natural ordering (ascending) of its elements by default." },
+  { topic:"TreeSet", q:"Does TreeSet allow duplicate elements?", choices:["Yes, duplicates are allowed","No, duplicates are not allowed","Only if null is also added","Only for String types"], ans:1, exp:"TreeSet implements Set, which does not allow duplicates." },
+  { topic:"TreeSet", q:"Does TreeSet allow null values?", choices:["Yes, multiple null values","Yes, one null value","No, it does not allow null","Only if Comparator is used"], ans:2, exp:"TreeSet uses comparisons for ordering; null cannot be compared and causes NullPointerException." },
+  { topic:"TreeSet", q:"What type of structure is a TreeSet considered?", choices:["Linear structure","Non-linear structure","Stack-based structure","Queue-based structure"], ans:1, exp:"TreeSet is based on tree hierarchy, which is a non-linear data structure." },
+  { topic:"TreeSet", q:"In a Tree structure, what is the topmost node called?", choices:["Parent","Child","Root","Leaf"], ans:2, exp:"The Root is the topmost node of a tree with no parent." },
+  { topic:"TreeSet", q:"In a Tree structure, how many parents can a single node have?", choices:["Zero","One","Two","Unlimited"], ans:1, exp:"Every node in a tree (except root) has exactly one parent node." },
+  { topic:"TreeSet", q:"What is the best use case for TreeSet?", choices:["Fast searching without order","Storing key-value pairs","Sorted unique data","Frequent insert/delete operations"], ans:2, exp:"TreeSet is ideal when you need both uniqueness and sorted ordering." },
+  { topic:"TreeSet", q:"Which correctly compares HashSet and TreeSet?", choices:["Both maintain insertion order","HashSet sorts elements; TreeSet does not","HashSet is faster for searching; TreeSet maintains sorted order","Both allow duplicate elements"], ans:2, exp:"HashSet provides O(1) search; TreeSet provides O(log n) but maintains sorted order." },
+
+  // ── COLLECTIONS CLASS ──
+  { topic:"Collections Class", q:"In which package are the Collections class utility methods defined?", choices:["java.lang","java.io","java.util.Collections","java.util"], ans:3, exp:"The Collections class with all its static methods is in java.util package." },
+  { topic:"Collections Class", q:"Which method adds multiple elements to a collection at once?", choices:["add()","put()","addAll()","insert()"], ans:2, exp:"Collections.addAll() adds multiple elements to a collection in one call." },
+  { topic:"Collections Class", q:"Which method sorts a List in ascending order?", choices:["Collections.order()","Collections.sort()","Collections.arrange()","Collections.ascending()"], ans:1, exp:"Collections.sort() sorts a List in its natural ascending order." },
+  { topic:"Collections Class", q:"Which method sorts a collection in descending order?", choices:["Collections.sort(list, false)","Collections.descend()","Collections.sort(list, Collections.reverseOrder())","Collections.reverse()"], ans:2, exp:"Pass Collections.reverseOrder() as the Comparator argument to sort in descending order." },
+  { topic:"Collections Class", q:"Which method searches for an element in a sorted List?", choices:["Collections.search()","Collections.find()","Collections.binarySearch()","Collections.indexOf()"], ans:2, exp:"Collections.binarySearch() requires the list to be sorted first." },
+  { topic:"Collections Class", q:"What does Collections.binarySearch() return if an element is NOT found?", choices:["0","-1","-(insertionPoint) - 1","null"], ans:2, exp:"If not found, binarySearch returns a negative value: -(insertion point) - 1." },
+  { topic:"Collections Class", q:"What is a prerequisite for using Collections.binarySearch()?", choices:["The list must contain unique elements","The list must be sorted","The list must not be empty","The list must implement SortedSet"], ans:1, exp:"Binary search only works correctly on sorted lists." },
+  { topic:"Collections Class", q:"What does Collections.copy(dest, source) require about the destination list?", choices:["Destination must be empty","Destination must be the same size or larger than source","Destination must be sorted","Destination must be a different type"], ans:1, exp:"The destination list must already have enough capacity to hold the source elements." },
+  { topic:"Collections Class", q:"What does Collections.disjoint() return?", choices:["true if collections have common elements","true if collections have no common elements","The number of common elements","A new collection with common elements"], ans:1, exp:"disjoint() returns true when two collections share no elements." },
+  { topic:"Collections Class", q:"What exception occurs when Collection algorithms encounter incompatible types?", choices:["NullPointerException","ArrayIndexOutOfBoundsException","ClassCastException","IllegalArgumentException"], ans:2, exp:"ClassCastException occurs when the collection contains incompatible types." },
+  { topic:"Collections Class", q:"What exception occurs when an algorithm tries to modify an unmodifiable collection?", choices:["ClassCastException","UnsupportedOperationException","NullPointerException","IllegalStateException"], ans:1, exp:"Trying to modify an immutable/unmodifiable collection throws UnsupportedOperationException." },
+  { topic:"Collections Class", q:"Which immutable constants are provided by the Collections class?", choices:["EMPTY_SET, EMPTY_LIST, EMPTY_MAP","NULL_SET, NULL_LIST, NULL_MAP","VOID_SET, VOID_LIST, VOID_MAP","READ_SET, READ_LIST, READ_MAP"], ans:0, exp:"These three constants represent immutable empty collections." },
+  { topic:"Collections Class", q:"Which collection maintains order and allows duplicates, best for frequent insert/delete?", choices:["HashSet","TreeSet","LinkedList","Map"], ans:2, exp:"LinkedList maintains insertion order, allows duplicates, and is efficient for insert/delete." },
+
+  // ── JAVA PACKAGES ──
+  { topic:"Java Packages", q:"What is a Java Package?", choices:["A single Java class file","A group of related classes, interfaces, and sub-packages organized together","A compiled bytecode file","An external library file"], ans:1, exp:"Packages act like folders that group related classes and interfaces for easier management." },
+  { topic:"Java Packages", q:"Which of the following is a built-in Java package?", choices:["com.myapp.util","org.example.data","java.util","user.mypackage"], ans:2, exp:"java.util is a predefined package provided by Java, part of the Java API." },
+  { topic:"Java Packages", q:"Which package provides GUI components in Java (legacy Swing)?", choices:["java.io","java.sql","java.net","javax.swing"], ans:3, exp:"javax.swing provides the Swing GUI toolkit for creating window-based applications." },
+  { topic:"Java Packages", q:"What are user-defined packages?", choices:["Packages provided by the Java API","Packages built into the JDK","Packages created by the programmer to organize their own classes","Packages that come with third-party libraries"], ans:2, exp:"User-defined packages are custom packages created by developers for their own code organization." },
+  { topic:"Java Packages", q:"Which is an advantage of using Java packages?", choices:["Slows down compilation","Avoids naming collision between classes","Reduces the number of classes","Prevents inheritance"], ans:1, exp:"Packages allow the same class name in different packages without conflict." },
+  { topic:"Java Packages", q:"What does the Java API provide?", choices:["A compiler for Java programs","A library of prewritten classes included in Java","A database connection driver","A graphical IDE"], ans:1, exp:"The Java API provides ready-made classes for I/O, networking, GUI, and more." },
+  { topic:"Java Packages", q:"How do you import a specific class from a package?", choices:["include java.util.Scanner;","using java.util.Scanner;","import java.util.Scanner;","require java.util.Scanner;"], ans:2, exp:"The import keyword followed by package.ClassName imports a specific class." },
+  { topic:"Java Packages", q:"What does the wildcard (*) mean in 'import java.util.*;'?", choices:["Imports only the main class","Imports all classes inside the java.util package","Imports all packages starting with java","Creates a new package"], ans:1, exp:"The asterisk wildcard imports every class within the specified package." },
+  { topic:"Java Packages", q:"Which class from java.util is used to get user input?", choices:["Reader","BufferedReader","Scanner","InputReader"], ans:2, exp:"Scanner sc = new Scanner(System.in) is used to read keyboard input." },
+  { topic:"Java Packages", q:"What does System.in refer to?", choices:["Console output","Error output","Keyboard input","File input"], ans:2, exp:"System.in is the standard input stream connected to the keyboard." },
+  { topic:"Java Packages", q:"What is Swing in Java?", choices:["A package for database connectivity","Part of JFC used to create GUI applications","A sorting algorithm library","A network programming framework"], ans:1, exp:"Swing (javax.swing) is part of Java Foundation Classes for building GUI applications." },
+  { topic:"Java Packages", q:"Which Swing class is used to create a main application window?", choices:["JButton","JTextField","JFrame","JPanel"], ans:2, exp:"JFrame represents the main window/frame of a Swing application." },
+  { topic:"Java Packages", q:"Which Swing class allows multi-line text input?", choices:["JTextField","JLabel","JTextArea","JButton"], ans:2, exp:"JTextArea provides a multi-line text input area, unlike JTextField which is single-line." },
+  { topic:"Java Packages", q:"What are the two ways to create a JFrame in Swing?", choices:["By importing and by exporting","By creating object (Association) and by extending Frame (Inheritance)","By declaration and by initialization","By composition and by aggregation"], ans:1, exp:"A Frame can be created either as an object reference or by extending the Frame class." },
+  { topic:"Java Packages", q:"What does the java.io package handle?", choices:["GUI creation","Reading and writing data (File I/O)","Network connections only","Database queries"], ans:1, exp:"java.io handles the flow of data for reading from and writing to files, memory, or networks." },
+  { topic:"Java Packages", q:"What is a Stream in Java I/O?", choices:["A sorted collection of data","A flow of data (input or output)","A type of array","A GUI component"], ans:1, exp:"An Input Stream reads data; an Output Stream writes data." },
+  { topic:"Java Packages", q:"What does System.err represent?", choices:["Keyboard input","Console output","Error output","File output"], ans:2, exp:"System.err is the standard error output stream, typically used to print error messages." },
+  { topic:"Java Packages", q:"What does System.out represent?", choices:["Keyboard input","Console (standard) output","Error output","File output"], ans:1, exp:"System.out is the standard output stream used with println(), print(), etc." },
+
+  // ── JAVAFX ──
+  { topic:"JavaFX", q:"What is a GUI?", choices:["A text-based command-line interface","A user-friendly visual interface using buttons, text fields, and menus","A database management system","A type of programming language"], ans:1, exp:"GUI allows users to interact with applications visually instead of through text commands." },
+  { topic:"JavaFX", q:"What are GUI components also called?", choices:["Modules and Libraries","Controls and Widgets","Objects and Classes","Nodes and Edges"], ans:1, exp:"GUI components are referred to as controls or widgets in the Java ecosystem." },
+  { topic:"JavaFX", q:"What is JavaFX?", choices:["A legacy GUI toolkit replaced by Swing","A database framework for Java","A set of Java packages for rich client applications with advanced graphics and UI","A Java compiler plugin"], ans:2, exp:"JavaFX supports animations, 2D/3D graphics, multimedia, and touch-enabled apps." },
+  { topic:"JavaFX", q:"What are the three Java GUI APIs in order from oldest to newest?", choices:["Swing → AWT → JavaFX","JavaFX → AWT → Swing","AWT → Swing → JavaFX","AWT → JavaFX → Swing"], ans:2, exp:"AWT is the oldest, Swing improved upon it, and JavaFX is the modern framework." },
+  { topic:"JavaFX", q:"What is JavaFX Scene Builder?", choices:["A code editor for Java","A drag-and-drop tool to design JavaFX interfaces that generates FXML files","A debugger for JavaFX applications","A runtime for JavaFX"], ans:1, exp:"Scene Builder lets developers visually design UI without writing layout code manually." },
+  { topic:"JavaFX", q:"What is FXML?", choices:["A compiled Java bytecode format","An XML-based language used to describe the GUI layout separately from logic","A CSS framework for Java","A database query language"], ans:1, exp:"FXML separates UI design from program logic, similar to HTML separating content from code." },
+  { topic:"JavaFX", q:"What are the three main components of a JavaFX application structure?", choices:["Package, Class, Method","Frame, Panel, Component","Stage, Scene, Nodes","Window, Container, Element"], ans:2, exp:"JavaFX apps are structured as Stage (window) > Scene (container) > Nodes (UI elements)." },
+  { topic:"JavaFX", q:"What does the Stage in JavaFX represent?", choices:["A container of UI elements","A single UI control","The main window (top-level container)","A layout manager"], ans:2, exp:"Stage is the top-level window, similar to Frame in Swing. The primaryStage is automatic." },
+  { topic:"JavaFX", q:"Can you add controls directly to a Stage in JavaFX?", choices:["Yes, directly","No, you must first add a Scene to the Stage","Yes, but only buttons","No, you must use a Panel"], ans:1, exp:"Controls must be added to a Scene, which is then set on the Stage." },
+  { topic:"JavaFX", q:"What does the Scene in JavaFX hold?", choices:["Only images and media","All visual contents and the Scene Graph","The application's business logic","Database connections"], ans:1, exp:"The Scene contains the Scene Graph and must be attached to a Stage to be visible." },
+  { topic:"JavaFX", q:"What is a Node in JavaFX?", choices:["A network endpoint","Every element inside a Scene (Button, TextField, Image, Shape, etc.)","A database record","A thread of execution"], ans:1, exp:"Every visual element in a JavaFX Scene is a Node with one parent and optional children." },
+  { topic:"JavaFX", q:"How many parents can a Node have in JavaFX?", choices:["Zero","One","Two","Unlimited"], ans:1, exp:"Each Node has exactly one parent (except the root node which has none)." },
+  { topic:"JavaFX", q:"What class must a JavaFX application extend?", choices:["JFrame","Applet","Application","JavaFXApp"], ans:2, exp:"import javafx.application.Application; then extend Application class." },
+  { topic:"JavaFX", q:"What is the required entry point method of a JavaFX application?", choices:["main()","init()","stop()","start(Stage primaryStage)"], ans:3, exp:"start() is the required overridden method where the JavaFX application begins." },
+  { topic:"JavaFX", q:"What is the purpose of the init() method in the JavaFX lifecycle?", choices:["Cleanup before closing","Entry point of the app","Initialization before start()","Rendering the scene"], ans:2, exp:"init() runs before start() and is used for initialization tasks." },
+  { topic:"JavaFX", q:"What is the purpose of the stop() method in the JavaFX lifecycle?", choices:["Starts the application","Initializes resources","Cleanup before the application closes","Renders the scene graph"], ans:2, exp:"stop() is called when the application is about to close, used for cleanup." },
+  { topic:"JavaFX", q:"What is the Scene Graph in JavaFX?", choices:["A 3D rendering engine","A hierarchical tree structure representing all visual elements","A database schema","A list of scenes in order"], ans:1, exp:"The Scene Graph is a tree with a root node at top and child nodes forming the UI hierarchy." },
+  { topic:"JavaFX", q:"What can the Scene Graph handle?", choices:["Database transactions","Effects, Opacity, Transformations, and Event handlers","Network requests","File I/O operations"], ans:1, exp:"Scene Graph nodes support blur, shadow, opacity, rotation, scaling, and mouse/keyboard events." },
+  { topic:"JavaFX", q:"What is the role of the Prism layer in JavaFX architecture?", choices:["Manages windows and surfaces","Handles 2D and 3D rendering with hardware acceleration","Provides public developer APIs","Processes audio and video"], ans:1, exp:"Prism is the Graphics System layer that handles all rendering in JavaFX." },
+  { topic:"JavaFX", q:"What is the Glass Windowing Toolkit responsible for in JavaFX?", choices:["2D/3D rendering","Managing windows, timers, and surfaces (lowest layer)","Providing developer APIs","Processing media files"], ans:1, exp:"Glass Windowing Toolkit is the lowest layer of JavaFX managing native windowing." },
+  { topic:"JavaFX", q:"Which JavaFX thread is responsible for updating and modifying the UI?", choices:["Prism Render Thread","Media Thread","JavaFX Application Thread","Background Worker Thread"], ans:2, exp:"Only the JavaFX Application Thread can modify live scenes; other threads must use Platform.runLater()." },
+  { topic:"JavaFX", q:"What is the Prism Render Thread responsible for?", choices:["Modifying UI components","Handling audio and video","Rendering the scene graph separately from the application thread","Managing keyboard events"], ans:2, exp:"Prism Render Thread handles rendering while the Application Thread handles UI logic." },
+  { topic:"JavaFX", q:"What is a Pulse in JavaFX?", choices:["A background sound effect","An event that updates the Scene Graph (max 60 fps)","A type of animation","A network packet"], ans:1, exp:"Pulse events synchronize the UI state with the rendering engine at up to 60 frames per second." },
+  { topic:"JavaFX", q:"What is the maximum pulse (frame) rate in JavaFX?", choices:["30 frames per second","60 frames per second","120 frames per second","Unlimited"], ans:1, exp:"JavaFX limits the pulse rate to a maximum of 60 frames per second." },
+  { topic:"JavaFX", q:"Which audio formats does JavaFX support?", choices:["DOCX, PDF, TXT","MP3, WAV, AIFF, FLV","JPG, PNG, GIF","XML, JSON, CSV"], ans:1, exp:"JavaFX media support includes MP3, WAV, AIFF, and FLV audio/video formats." },
+  { topic:"JavaFX", q:"What is the JavaFX Web Component based on?", choices:["Mozilla Firefox engine","WebKit engine","Internet Explorer engine","Chromium engine"], ans:1, exp:"JavaFX's web component uses WebKit and provides full web browsing capability." },
+  { topic:"JavaFX", q:"What is the purpose of Layout Panes in JavaFX?", choices:["To store data in memory","To arrange UI elements dynamically","To handle network connections","To manage database queries"], ans:1, exp:"Layout Panes (HBox, VBox, GridPane, etc.) automatically arrange nodes in the scene." },
+  { topic:"JavaFX", q:"Which visual effect is available in JavaFX?", choices:["SQLFilter","DataSort","DropShadow","NetRoute"], ans:2, exp:"JavaFX supports visual effects including DropShadow, Reflection, and Lighting." },
+  { topic:"JavaFX", q:"Which transformations does JavaFX support for nodes?", choices:["Encode and Decode","Compile and Link","Move, Rotate, and Scale","Parse and Serialize"], ans:2, exp:"JavaFX supports 2D and 3D transformations: translation (move), rotation, and scaling." },
+  { topic:"JavaFX", q:"In NetBeans + Scene Builder integration, what is the role of Controller.java?", choices:["Defines the UI layout in XML","Contains the program logic for the JavaFX application","Generates FXML automatically","Manages database connections"], ans:1, exp:"Controller.java handles event handling and business logic; .fxml handles the UI layout." },
+  { topic:"JavaFX", q:"In a JavaFX FXML project, what does the .fxml file contain?", choices:["Program logic and event handlers","Database connection strings","The UI design/layout description","Compiled bytecode"], ans:2, exp:"FXML files describe the UI structure; Controller.java provides the application logic." },
+  { topic:"JavaFX", q:"Which JavaFX feature allows styling the UI without changing Java code?", choices:["FXML support","CSS support","XML parsing","JSON integration"], ans:1, exp:"JavaFX supports CSS styling, allowing UI appearance to be changed without modifying Java code." },
+  { topic:"JavaFX", q:"What does JavaFX support for graphics?", choices:["Only 2D graphics","Only 3D graphics","Both 2D and 3D graphics with transformations","Neither; it delegates to Swing"], ans:2, exp:"JavaFX has built-in support for both 2D and 3D rendering via the Prism graphics engine." },
+
+  // ── MIXED / ANALYSIS ──
+  { topic:"Analysis & Mixed", q:"Which statement correctly differentiates List from Set in Java?", choices:["Both allow duplicates","List allows duplicates and maintains order; Set does not allow duplicates","Set allows duplicates; List does not","Both maintain sorted order"], ans:1, exp:"List (ArrayList, LinkedList) allows duplicates; Set (HashSet, TreeSet) enforces uniqueness." },
+  { topic:"Analysis & Mixed", q:"A developer needs to store student names alphabetically without duplicates. Which collection?", choices:["ArrayList","HashSet","LinkedList","TreeSet"], ans:3, exp:"TreeSet automatically sorts in ascending order and does not allow duplicates." },
+  { topic:"Analysis & Mixed", q:"Which is NOT a valid reason to use packages in Java?", choices:["To organize related classes","To avoid naming conflicts","To control access visibility","To increase execution speed"], ans:3, exp:"Packages help with organization, access control, and naming; they don't affect runtime speed." },
+  { topic:"Analysis & Mixed", q:"Which Java framework is the most modern for building GUI applications?", choices:["AWT","Swing","JavaFX","Applet"], ans:2, exp:"JavaFX is the modern successor to AWT and Swing, offering rich graphics and multimedia support." },
+  { topic:"Analysis & Mixed", q:"What happens if you try to store a null value in a TreeSet?", choices:["It stores the null successfully","It returns false silently","It throws a NullPointerException","It converts null to an empty string"], ans:2, exp:"TreeSet uses element comparison for ordering, and comparing with null causes NullPointerException." },
+  { topic:"Analysis & Mixed", q:"Which collection is BEST for implementing a phone directory (fast lookup by name)?", choices:["LinkedList","TreeSet","HashSet","Map (HashMap)"], ans:3, exp:"A Map stores key-value pairs (name → number), allowing fast O(1) lookup by key." },
+  { topic:"Analysis & Mixed", q:"Collections.sort() requires elements to implement which interface?", choices:["Serializable","Cloneable","Comparable","Iterable"], ans:2, exp:"Elements must implement Comparable (or a Comparator must be provided) for sorting." },
+  { topic:"Analysis & Mixed", q:"In JavaFX, what is the correct hierarchy from top to bottom?", choices:["Node → Scene → Stage","Stage → Scene → Node","Scene → Stage → Node","Node → Stage → Scene"], ans:1, exp:"Stage is the top-level window, Scene holds content, and Nodes are individual UI elements." },
+  { topic:"Analysis & Mixed", q:"Which method checks if two collections share NO common elements?", choices:["Collections.isEmpty()","Collections.equals()","Collections.disjoint()","Collections.intersect()"], ans:2, exp:"disjoint() returns true if the two collections have no elements in common." },
+  { topic:"Analysis & Mixed", q:"Oldest-to-newest order of Java iteration approaches?", choices:["Iterator → Enumeration → Stream","Enumeration → Iterator → Stream (Java 8)","Stream → Iterator → Enumeration","Iterator → Stream → Enumeration"], ans:1, exp:"Enumeration is legacy, replaced by Iterator, and Java 8+ introduced Stream for functional-style iteration." },
+];
+
+// ============================================================
+//  TOPIC METADATA
+// ============================================================
+const TOPIC_ICONS = {
+  "JCF – Basics": "📦",
+  "Collection Interfaces": "🔗",
+  "LinkedList": "⛓️",
+  "HashSet": "#️⃣",
+  "TreeSet": "🌳",
+  "Collections Class": "🛠️",
+  "Java Packages": "📁",
+  "JavaFX": "🖥️",
+  "Analysis & Mixed": "🎯"
+};
+
+const TOPIC_COLORS = {
+  "JCF – Basics": "#4f8ef7",
+  "Collection Interfaces": "#06b6d4",
+  "LinkedList": "#8b5cf6",
+  "HashSet": "#f59e0b",
+  "TreeSet": "#22c55e",
+  "Collections Class": "#ec4899",
+  "Java Packages": "#f97316",
+  "JavaFX": "#3b82f6",
+  "Analysis & Mixed": "#ef4444"
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let selectedTopics = new Set();
+let quizMode = 'practice';
+let quizQueue = [];
+let currentIdx = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let answered = false;
+let streak = 0;
+let topicStats = {}; // { topicName: { correct, total } }
+let wrongAnswers = [];
+let examAnswers = []; // for exam mode
+
+// ============================================================
+//  BUILD HOME
+// ============================================================
+const allTopics = [...new Set(QUESTIONS.map(q => q.topic))];
+const topicsGrid = document.getElementById('topicsGrid');
+
+allTopics.forEach(topic => {
+  const count = QUESTIONS.filter(q => q.topic === topic).length;
+  const card = document.createElement('div');
+  card.className = 'topic-card selected';
+  card.dataset.topic = topic;
+  card.innerHTML = `<div class="topic-icon">${TOPIC_ICONS[topic] || '📌'}</div>
+    <div class="topic-name">${topic}</div>
+    <div class="topic-count">${count} questions</div>`;
+  card.addEventListener('click', () => toggleTopic(topic, card));
+  topicsGrid.appendChild(card);
+  selectedTopics.add(topic);
+});
+
+function toggleTopic(topic, card) {
+  if (selectedTopics.has(topic)) { selectedTopics.delete(topic); card.classList.remove('selected'); }
+  else { selectedTopics.add(topic); card.classList.add('selected'); }
+}
+
+function toggleAll() {
+  const cards = document.querySelectorAll('.topic-card');
+  if (selectedTopics.size === allTopics.length) {
+    selectedTopics.clear();
+    cards.forEach(c => c.classList.remove('selected'));
+  } else {
+    allTopics.forEach(t => selectedTopics.add(t));
+    cards.forEach(c => c.classList.add('selected'));
+  }
+}
+
+function selectMode(mode) {
+  quizMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelector(`[data-mode="${mode}"]`).classList.add('selected');
+}
+
+// ============================================================
+//  START QUIZ
+// ============================================================
+function startQuiz() {
+  if (selectedTopics.size === 0) { alert('Please select at least one topic!'); return; }
+
+  let pool = QUESTIONS.filter(q => selectedTopics.has(q.topic));
+  shuffle(pool);
+
+  if (quizMode === 'blitz') pool = pool.slice(0, 20);
+
+  quizQueue = pool;
+  currentIdx = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  streak = 0;
+  wrongAnswers = [];
+  examAnswers = [];
+  topicStats = {};
+  quizQueue.forEach(q => {
+    if (!topicStats[q.topic]) topicStats[q.topic] = { correct: 0, total: 0 };
+    topicStats[q.topic].total++;
+  });
+
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function reviewWrong() {
+  if (wrongAnswers.length === 0) { alert('No wrong answers to review! 🎉'); return; }
+  quizQueue = [...wrongAnswers];
+  wrongAnswers = [];
+  currentIdx = 0; correctCount = 0; wrongCount = 0; streak = 0; examAnswers = [];
+  topicStats = {};
+  quizQueue.forEach(q => {
+    if (!topicStats[q.topic]) topicStats[q.topic] = { correct: 0, total: 0 };
+    topicStats[q.topic].total++;
+  });
+  showScreen('quiz');
+  renderQuestion();
+}
+
+// ============================================================
+//  RENDER QUESTION
+// ============================================================
+function renderQuestion() {
+  const q = quizQueue[currentIdx];
+  answered = false;
+
+  // Progress
+  const pct = (currentIdx / quizQueue.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFrac').textContent = `${currentIdx + 1} / ${quizQueue.length}`;
+  document.getElementById('progressTopic').textContent = q.topic;
+  document.getElementById('qTopicBadge').textContent = q.topic;
+  document.getElementById('qTopicBadge').style.borderColor = (TOPIC_COLORS[q.topic] || '#4f8ef7') + '55';
+  document.getElementById('qTopicBadge').style.color = TOPIC_COLORS[q.topic] || '#4f8ef7';
+  document.getElementById('qNumber').textContent = `Q${currentIdx + 1}`;
+  document.getElementById('scoreCorrect').textContent = correctCount;
+  document.getElementById('scoreWrong').textContent = wrongCount;
+
+  // Question
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('questionCard').style.animation = 'none';
+  document.getElementById('questionCard').offsetHeight;
+  document.getElementById('questionCard').style.animation = '';
+
+  // Choices
+  const letters = ['A','B','C','D'];
+  const container = document.getElementById('choicesContainer');
+  container.innerHTML = '';
+  q.choices.forEach((choice, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-letter">${letters[i]}</span><span>${choice}</span>`;
+    btn.style.animationDelay = (0.05 + i * 0.05) + 's';
+    btn.addEventListener('click', () => selectAnswer(i));
+    container.appendChild(btn);
+  });
+
+  // Feedback
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+
+  document.getElementById('nextBtn').classList.remove('show');
+  document.getElementById('skipBtn').style.display = '';
+  document.getElementById('hintTag').textContent = 'Click an answer to continue';
+}
+
+// ============================================================
+//  SELECT ANSWER
+// ============================================================
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+
+  const q = quizQueue[currentIdx];
+  const buttons = document.querySelectorAll('.choice-btn');
+  const isCorrect = idx === q.ans;
+
+  // Highlight
+  buttons[q.ans].classList.add('correct');
+  if (!isCorrect) buttons[idx].classList.add('wrong');
+  buttons.forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    correctCount++;
+    streak++;
+    topicStats[q.topic].correct++;
+    if (streak >= 3) { showStreak(); }
+  } else {
+    wrongCount++;
+    streak = 0;
+    wrongAnswers.push(q);
+    hideStreak();
+  }
+
+  if (quizMode === 'exam') {
+    examAnswers.push({ q, chosen: idx, isCorrect });
+  }
+
+  // Feedback (practice mode)
+  if (quizMode !== 'exam') {
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback ' + (isCorrect ? 'correct-fb' : 'wrong-fb') + ' show';
+    document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '❌';
+    document.getElementById('feedbackTitle').textContent = isCorrect ? 'Correct!' : 'Incorrect — the right answer was: ' + q.choices[q.ans];
+    document.getElementById('feedbackExplanation').textContent = q.exp;
+  }
+
+  document.getElementById('nextBtn').classList.add('show');
+  document.getElementById('skipBtn').style.display = 'none';
+  document.getElementById('hintTag').textContent = currentIdx + 1 < quizQueue.length ? 'Press Next to continue' : 'Press Next to see results';
+
+  document.getElementById('scoreCorrect').textContent = correctCount;
+  document.getElementById('scoreWrong').textContent = wrongCount;
+}
+
+function skipQuestion() {
+  if (answered) return;
+  wrongAnswers.push(quizQueue[currentIdx]);
+  wrongCount++;
+  document.getElementById('scoreWrong').textContent = wrongCount;
+  nextQuestion();
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx >= quizQueue.length) { showResults(); return; }
+  renderQuestion();
+}
+
+// ============================================================
+//  STREAK
+// ============================================================
+function showStreak() {
+  const el = document.getElementById('streak');
+  document.getElementById('streakVal').textContent = `🔥 ${streak}`;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), 2000);
+}
+function hideStreak() {
+  document.getElementById('streak').classList.remove('show');
+}
+
+// ============================================================
+//  RESULTS
+// ============================================================
+function showResults() {
+  showScreen('results');
+
+  const total = quizQueue.length;
+  const pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+  document.getElementById('resCorrect').textContent = correctCount;
+  document.getElementById('resWrong').textContent = wrongCount;
+  document.getElementById('resTotal').textContent = total;
+
+  let title = pct >= 90 ? '🏆 Outstanding!' : pct >= 75 ? '🎉 Great Job!' : pct >= 50 ? '💪 Keep Going!' : '📚 Keep Studying!';
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsSubtitle').textContent = `You scored ${pct}% (${correctCount} of ${total} correct)`;
+
+  // Ring
+  const circumference = 502.65;
+  const offset = circumference - (pct / 100) * circumference;
+  const ring = document.getElementById('ringFill');
+  const color = pct >= 75 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+  ring.style.stroke = color;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+  document.getElementById('ringPct').textContent = pct + '%';
+  document.getElementById('ringPct').style.color = color;
+
+  // Breakdown
+  const breakdownEl = document.getElementById('breakdownItems');
+  breakdownEl.innerHTML = '';
+  Object.entries(topicStats).forEach(([topic, stat]) => {
+    const p = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+    const col = p >= 75 ? '#22c55e' : p >= 50 ? '#f59e0b' : '#ef4444';
+    breakdownEl.innerHTML += `
+      <div class="breakdown-item">
+        <div class="breakdown-row">
+          <span class="breakdown-name">${TOPIC_ICONS[topic] || ''} ${topic}</span>
+          <span class="breakdown-score">${stat.correct}/${stat.total} (${p}%)</span>
+        </div>
+        <div class="breakdown-bar"><div class="breakdown-fill" style="width:0%;background:${col}" data-pct="${p}"></div></div>
+      </div>`;
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.breakdown-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 200);
+
+  if (pct >= 80) launchConfetti();
+}
+
+// ============================================================
+//  CONFETTI
+// ============================================================
+function launchConfetti() {
+  const colors = ['#4f8ef7','#7c3aed','#22c55e','#f59e0b','#ef4444','#ec4899'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random() * 100}vw;
+        top: -10px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration: ${1.5 + Math.random() * 2}s;
+        animation-delay: 0s;
+        transform: rotate(${Math.random() * 360}deg);
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 30);
+  }
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() { showScreen('home'); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('quiz').classList.contains('active')) return;
+  const keys = { '1': 0, '2': 1, '3': 2, '4': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
+  if (keys[e.key] !== undefined && !answered) selectAnswer(keys[e.key]);
+  if ((e.key === 'Enter' || e.key === 'ArrowRight') && answered) nextQuestion();
+  if (e.key === 's' && !answered) skipQuestion();
+});
+</script>
+</body>
+</html>
